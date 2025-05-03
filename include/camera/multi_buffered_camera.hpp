@@ -23,6 +23,7 @@ class MultiBufferedCamera {
   bool ready() const;
   TimestampedFrame getLatestFrame();
   TimestampedFrame getLatestFrameMinusOne();
+  TimestampedFrame getLatestFrameMinusN(int n);
 
   private:
   void init();

@@ -51,6 +51,8 @@ std::pair<cv::Mat, cv::Mat> StereoCamera::getLatestFrames() {
   //   }
   // }
   int count = 0;
+  int r = 1;
+  int l = 1;
   do {
     // is_synchronous = false;
     auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(left_frame.timestamp - right_frame.timestamp).count();
@@ -59,15 +61,21 @@ std::pair<cv::Mat, cv::Mat> StereoCamera::getLatestFrames() {
       // std::cout << "Synchronous frames captured" << std::endl;
       break;
     } else {
-      std::cout << "Frames not synchronous, dt: " << dt << " ms," << " count " << count++ << std::endl;
       // std::this_thread::sleep_for(std::chrono::milliseconds(1));
       if (left_frame.timestamp < right_frame.timestamp) {
         // left_frame = cam_left_.getLatestFrame();
-        right_frame = cam_right_.getLatestFrameMinusOne();
+        // right_frame = cam_right_.getLatestFrameMinusOne();
+        if (r > 1)
+          std::cout << "r = " << r << std::endl;
+        right_frame = cam_right_.getLatestFrameMinusN(r++);
       } else {
         // right_frame = cam_right_.getLatestFrame();
-        left_frame = cam_left_.getLatestFrameMinusOne();
+        // left_frame = cam_left_.getLatestFrameMinusOne();
+        if (l > 1)
+          std::cout << "l = " << l << std::endl;
+        left_frame = cam_left_.getLatestFrameMinusN(l++);
       }
+      // std::cout << "Frames not synchronous, dt: " << dt << " ms," << " count " << count++ << std::endl;
     }
   // } while (!is_synchronous);
   } while (true);

@@ -104,6 +104,14 @@ TimestampedFrame MultiBufferedCamera::getLatestFrameMinusOne() {
   return buffers_[index];
 }
 
+TimestampedFrame MultiBufferedCamera::getLatestFrameMinusN(int n) {
+  while (!cap_ready_.load()) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  int index = (write_index_.load() - n + buffer_count_) % buffer_count_;
+  return buffers_[index];
+}
+
 void MultiBufferedCamera::readyCamera() {
   while (!cap_ready_.load()) {
     cap_ >> buffers_[0].frame;
