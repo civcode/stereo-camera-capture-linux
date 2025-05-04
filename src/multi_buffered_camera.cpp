@@ -106,18 +106,22 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
   if (running_.load()) {
     int index = write_index_.load();
     if (!buffers_[index].used) {
-      std::cout << "returning buffer " << index << std::endl;
+      // std::cout << "returning buffer " << index << std::endl;
       // buffers_[index].used = true;
       // std::unique_lock<std::mutex> lock(mtx_);
       // frame_available_ = false;
       return buffers_[index];
     } else {
-      std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
-      std::cout << "frame_available_: " << frame_available_ << std::endl;
+      // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
+      // std::cout << "frame_available_: " << frame_available_ << std::endl;
+      {
+        std::unique_lock<std::mutex> lock(mtx_);
+        // frame_available_ = false;
+      }
       std::unique_lock<std::mutex> lock(mtx_);
+      // frame_available_ = false;
       cv_.wait(lock, [this] { return frame_available_; });
-      frame_available_ = false;
-      lock.unlock();
+      // lock.unlock();
       int index = write_index_.load();
       // buffers_[index].used = true;
       if (buffers_[index].used) {

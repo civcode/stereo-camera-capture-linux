@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
     timer.tic();
     auto images = camera.getLatestFrames();
     float dt = timer.toc().ms().value<float>();
-    cout << "dt in ms: " << dt << endl;
+    // cout << "dt in ms: " << dt << endl;
     // frame = timestamped_frame.frame;
     // frame = timestamped_frame.frame.clone();
     frame[0] = *images.first;

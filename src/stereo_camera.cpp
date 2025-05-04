@@ -46,10 +46,10 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
   TicTocTimer timer;
   timer.tic();
   MultiBufferedCamera::TimestampedFrame& left_frame = cam_left_.getLatestFrame();
-  std::cout << "Left frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
+  // std::cout << "Left frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
   timer.tic();
   MultiBufferedCamera::TimestampedFrame& right_frame = cam_right_.getLatestFrame();
-  std::cout << "Right frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
+  // std::cout << "Right frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
 
   int count = 0;
   int step_r = 1;
@@ -59,16 +59,16 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
     if (std::abs(dt) < dt_max_) {
       // Frames are close enough
       // std::cout << "Frames are close enough, dt = " << dt << std::endl;
-      std::cout << left_frame.used << " " << right_frame.used << std::endl;
+      // std::cout << left_frame.used << " " << right_frame.used << std::endl;
       break;
     } else {
       if (dt > 0) {
-        if (step_l >= 1)
+        if (step_l > 1)
           std::cout << "step_l = " << step_l << " @ frame " << frame_count_ << " @ dt = " << dt << std::endl;
         left_frame = cam_left_.getLatestFrameMinusN(step_l);
         step_l++;
       } else {
-        if (step_r >= 1)
+        if (step_r > 1)
           std::cout << "step_r = " << step_r << " @ frame " << frame_count_ << " @ dt = "<< dt << std::endl;
         right_frame = cam_right_.getLatestFrameMinusN(step_r);
         step_r++;
