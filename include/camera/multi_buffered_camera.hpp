@@ -42,6 +42,8 @@ class MultiBufferedCamera {
   std::atomic<bool> running_;
   std::atomic<bool> cap_ready_;
   std::atomic<bool> stopped_;
+  std::atomic<int> last_read_index_;
+  std::atomic<int> cap_count_;
 
   cv::VideoCapture cap_;
   std::thread capture_thread_;

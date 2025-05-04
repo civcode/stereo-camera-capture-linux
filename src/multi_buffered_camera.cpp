@@ -9,6 +9,8 @@ MultiBufferedCamera::MultiBufferedCamera(int camera_id, int width, int height, i
   running_(false),
   cap_ready_(false),
   stopped_(true),
+  last_read_index_(-1),
+  cap_count_(0),
   id_(camera_id),
   width_(width),
   height_(height),
@@ -86,12 +88,12 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
-  static thread_local int last_read_index = -1;
+  // static thread_local int last_read_index = -1;
 
   while (running_.load()) {
     int current_index = write_index_.load();
-    if (current_index != last_read_index) {
-      last_read_index = current_index;
+    if (current_index != last_read_index_.load()) {
+      last_read_index_.store(current_index);
       return buffers_[current_index];
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -104,6 +106,7 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusOne() {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
   int index = (write_index_.load() - 1 + buffer_count_) % buffer_count_;
+  // last_read_index_.store(index);
   return buffers_[index];
 }
 
@@ -112,6 +115,7 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusN(int n) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
   int index = (write_index_.load() - n + buffer_count_) % buffer_count_;
+  // last_read_index_.store(index);
   return buffers_[index];
 }
 

@@ -13,6 +13,8 @@
 #include "camera/ps3_eye.hpp"
 #include "camera/stereo_camera.hpp"
 
+#include "tic_toc_timer.h"
+
 namespace fs = std::filesystem;
 
 using std::cout;
@@ -31,9 +33,18 @@ int main(int argc, char* argv[]) {
   cv::Mat frame[2];
 
   int count = 0;
+
+  double fps = 0.0;
+  int frameCount = 0;
+  double tickFrequency = cv::getTickFrequency();
+  int64 startTime = cv::getTickCount();
+  TicTocTimer timer;
   while (true) {
     // auto timestamped_frame = camera.getLatestFrames();
+    timer.tic();
     auto images = camera.getLatestFrames();
+    float dt = timer.toc().ms().value<float>();
+    cout << "dt in ms: " << dt << endl;
     // frame = timestamped_frame.frame;
     // frame = timestamped_frame.frame.clone();
     frame[0] = *images.first;
@@ -49,7 +60,21 @@ int main(int argc, char* argv[]) {
     // cv::imshow("Camera Left", frame[0]);
     // cv::imshow("Camera Right", frame[1]);
     if (cv::waitKey(1) == 27) break;
+    // std::this_thread::sleep_for(std::chrono::milliseconds(30));
     // cout << "Frame " << count++ << " captured" << endl;
+
+    frameCount++;
+    int64 currentTime = cv::getTickCount();
+    double timePassed = (currentTime - startTime) / tickFrequency;
+
+    if (timePassed >= 1.0) {
+        fps = frameCount / timePassed;
+        startTime = currentTime;
+        frameCount = 0;
+    }
+    // printf("\rFPS: %.1f dt: %f", fps, dt);
+    // cout << std::flush;
+    // cout << "\rFPS: " << fps << std::flush;
   }
   camera.stop();
   cv::destroyAllWindows();

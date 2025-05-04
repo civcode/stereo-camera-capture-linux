@@ -2,6 +2,8 @@
 
 #include <chrono>
 
+#include "tic_toc_timer.h"
+
 StereoCamera::StereoCamera(int camera_id_left, int camera_id_right, int width, int height, int fps, int buffer_count, int dt_max)
 : id_left_(camera_id_left),
   id_right_(camera_id_right),
@@ -41,7 +43,11 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
   bool is_synchronous;
+  TicTocTimer timer;
+  timer.tic();
   auto left_frame = cam_left_.getLatestFrame();
+  timer.toc();
+  std::cout << "Left frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
   auto right_frame = cam_right_.getLatestFrame();
   int count = 0;
   int step_r = 1;
