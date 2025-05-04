@@ -24,8 +24,8 @@ int main(int argc, char* argv[]) {
   // MultiBufferedCamera camera(0, 640, 480, 60);
   // MultiBufferedCamera camera(0, 320, 240, 187);
   // StereoCamera camera(0, 1, 640, 480, 15, 10);
-  StereoCamera camera(0, 1, 640, 480, 60, 10);
-  // StereoCamera camera(0, 1, 320, 240, 90, 10);
+  StereoCamera camera(0, 1, 640, 480, 30, 10, 5);
+  // StereoCamera camera(0, 1, 320, 240, 187, 10, 3);
   camera.start();
   cv::namedWindow("Camera", cv::WINDOW_AUTOSIZE);
   cv::Mat frame[2];

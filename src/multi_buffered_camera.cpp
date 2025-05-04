@@ -77,11 +77,14 @@ bool MultiBufferedCamera::ready() const {
   return cap_ready_.load();
 }
 
+int MultiBufferedCamera::getBufferCount() const {
+  return buffer_count_;
+}
+
 TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
-  // return buffers_[write_index_.load()];
 
   static thread_local int last_read_index = -1;
 

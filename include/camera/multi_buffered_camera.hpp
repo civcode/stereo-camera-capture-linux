@@ -21,6 +21,7 @@ class MultiBufferedCamera {
   void start();
   void stop();
   bool ready() const;
+  int getBufferCount() const;
   TimestampedFrame& getLatestFrame();
   TimestampedFrame& getLatestFrameMinusOne();
   TimestampedFrame& getLatestFrameMinusN(int n);
