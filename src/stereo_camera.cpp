@@ -45,10 +45,12 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
   bool is_synchronous;
   TicTocTimer timer;
   timer.tic();
-  auto left_frame = cam_left_.getLatestFrame();
-  timer.toc();
+  MultiBufferedCamera::TimestampedFrame& left_frame = cam_left_.getLatestFrame();
   std::cout << "Left frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
-  auto right_frame = cam_right_.getLatestFrame();
+  timer.tic();
+  MultiBufferedCamera::TimestampedFrame& right_frame = cam_right_.getLatestFrame();
+  std::cout << "Right frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
+
   int count = 0;
   int step_r = 1;
   int step_l = 1;
@@ -56,16 +58,24 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
     auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(left_frame.timestamp - right_frame.timestamp).count();
     if (std::abs(dt) < dt_max_) {
       // Frames are close enough
+      // std::cout << "Frames are close enough, dt = " << dt << std::endl;
+      std::cout << left_frame.used << " " << right_frame.used << std::endl;
       break;
     } else {
-      if (left_frame.timestamp < right_frame.timestamp) {
-        if (step_r > 1)
-          std::cout << "step_r = " << step_r << " @ frame " << frame_count_ << " @ dt = " << dt << std::endl;
-        right_frame = cam_right_.getLatestFrameMinusN(step_r++);
+      if (dt > 0) {
+        if (step_l >= 1)
+          std::cout << "step_l = " << step_l << " @ frame " << frame_count_ << " @ dt = " << dt << std::endl;
+        left_frame = cam_left_.getLatestFrameMinusN(step_l);
+        step_l++;
       } else {
-        if (step_l > 1)
-          std::cout << "step_l = " << step_l << " @ frame " << frame_count_ << " @ dt = "<< dt << std::endl;
-        left_frame = cam_left_.getLatestFrameMinusN(step_l++);
+        if (step_r >= 1)
+          std::cout << "step_r = " << step_r << " @ frame " << frame_count_ << " @ dt = "<< dt << std::endl;
+        right_frame = cam_right_.getLatestFrameMinusN(step_r);
+        step_r++;
+      }
+      if (left_frame.used || right_frame.used) {
+        // std::cout << "Frame already used, exiting" << std::endl;
+        break;
       }
       if (step_l >= cam_left_.getBufferCount() || step_r >= cam_right_.getBufferCount()) {
         std::cout << "step_l = " << step_l << ", step_r = " << step_r << std::endl;
@@ -77,6 +87,8 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
   } while (true);
 
   frame_count_++;
+  left_frame.used = true;
+  right_frame.used = true;
   return std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> (
     std::make_shared<cv::Mat>(left_frame.frame),
     std::make_shared<cv::Mat>(right_frame.frame)

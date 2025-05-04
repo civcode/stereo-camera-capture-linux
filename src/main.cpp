@@ -56,6 +56,7 @@ int main(int argc, char* argv[]) {
     }
     cv::Mat img;
     cv::hconcat(frame[0], frame[1], img);
+    // cv::resize(img, img, cv::Size(320, 240));
     cv::imshow("Camera", img);
     // cv::imshow("Camera Left", frame[0]);
     // cv::imshow("Camera Right", frame[1]);
@@ -75,6 +76,7 @@ int main(int argc, char* argv[]) {
     // printf("\rFPS: %.1f dt: %f", fps, dt);
     // cout << std::flush;
     // cout << "\rFPS: " << fps << std::flush;
+    cout << "FPS: " << fps << std::endl;
   }
   camera.stop();
   cv::destroyAllWindows();

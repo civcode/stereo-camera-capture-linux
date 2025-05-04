@@ -4,13 +4,16 @@
 #include <opencv2/opencv.hpp>
 #include <atomic>
 #include <chrono>
+#include <condition_variable>
 #include <iostream>
+#include <mutex>
 #include <thread>
 #include <vector>
 
 class MultiBufferedCamera {
   public:
   struct TimestampedFrame {
+    bool used;
     cv::Mat frame;
     std::chrono::steady_clock::time_point timestamp;
   };
@@ -44,6 +47,10 @@ class MultiBufferedCamera {
   std::atomic<bool> stopped_;
   std::atomic<int> last_read_index_;
   std::atomic<int> cap_count_;
+
+  std::mutex mtx_;
+  std::condition_variable cv_;
+  bool frame_available_;
 
   cv::VideoCapture cap_;
   std::thread capture_thread_;
