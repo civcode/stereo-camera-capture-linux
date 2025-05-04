@@ -77,7 +77,7 @@ bool MultiBufferedCamera::ready() const {
   return cap_ready_.load();
 }
 
-TimestampedFrame MultiBufferedCamera::getLatestFrame() {
+TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -96,7 +96,7 @@ TimestampedFrame MultiBufferedCamera::getLatestFrame() {
   return buffers_[0];
 }
 
-TimestampedFrame MultiBufferedCamera::getLatestFrameMinusOne() {
+TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusOne() {
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -104,7 +104,7 @@ TimestampedFrame MultiBufferedCamera::getLatestFrameMinusOne() {
   return buffers_[index];
 }
 
-TimestampedFrame MultiBufferedCamera::getLatestFrameMinusN(int n) {
+TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusN(int n) {
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }

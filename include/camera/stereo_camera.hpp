@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 // #include <atomic>
 #include <chrono>
+#include <memory>
 #include <iostream>
 // #include <thread>
 // #include <vector>
@@ -17,7 +18,8 @@ class StereoCamera {
   void start();
   void stop();
   bool ready() const;
-  std::pair<cv::Mat, cv::Mat> getLatestFrames();
+  // std::pair<cv::Mat&, cv::Mat&> getLatestFrames();
+  std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> getLatestFrames();
 
   private:
   void init();

@@ -31,7 +31,8 @@ void StereoCamera::stop() {
 bool StereoCamera::ready() const {
   return cam_left_.ready() && cam_right_.ready();
 }
-std::pair<cv::Mat, cv::Mat> StereoCamera::getLatestFrames() {
+// std::pair<cv::Mat&, cv::Mat&> StereoCamera::getLatestFrames() {
+std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getLatestFrames() {
   while (!ready()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
@@ -80,5 +81,8 @@ std::pair<cv::Mat, cv::Mat> StereoCamera::getLatestFrames() {
   // } while (!is_synchronous);
   } while (true);
 
-  return {left_frame.frame, right_frame.frame};
+  return {
+    std::make_shared<cv::Mat>(left_frame.frame),
+    std::make_shared<cv::Mat>(right_frame.frame)
+  };
 }

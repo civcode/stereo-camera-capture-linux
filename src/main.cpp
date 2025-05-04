@@ -36,8 +36,8 @@ int main(int argc, char* argv[]) {
     auto images = camera.getLatestFrames();
     // frame = timestamped_frame.frame;
     // frame = timestamped_frame.frame.clone();
-    frame[0] = images.first;
-    frame[1] = images.second;
+    frame[0] = *images.first;
+    frame[1] = *images.second;
     if (frame[0].empty()) {
       cout << "No frame captured" << endl;
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
