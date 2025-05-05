@@ -4,8 +4,8 @@
 #include "tictoc/timer.hpp"
 
 int main(int argc, char* argv[]) {
-  // MultiBufferedCamera camera(0, 640, 480, 60);
-  // MultiBufferedCamera camera(0, 320, 240, 187);
+  // MonoCamera camera(0, 640, 480, 60);
+  // MonoCamera camera(0, 320, 240, 187);
   // StereoCamera camera(0, 1, 640, 480, 15, 10);
   // StereoCamera camera(0, 1, 640, 480, 30, 10, 5);
 

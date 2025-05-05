@@ -37,8 +37,8 @@ include_directories(
 
 set(SOURCES
   ${CMAKE_SOURCE_DIR}/src/double_buffered_camera.cpp
-  ${CMAKE_SOURCE_DIR}/src/multi_buffered_camera.cpp
-  ${CMAKE_SOURCE_DIR}/src/stereo_camera.cpp
+  ${CMAKE_SOURCE_DIR}/src/mono.cpp
+  ${CMAKE_SOURCE_DIR}/src/stereo.cpp
 )
 
 add_executable(camera src/main.cpp ${SOURCES})

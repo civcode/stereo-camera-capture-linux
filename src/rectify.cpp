@@ -6,7 +6,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include "cxxopts.hpp"
 
-#include "camera/stereo_camera.hpp"
+#include "camera/stereo.hpp"
 #include "tictoc/timer.hpp"
 
 using std::cout;
