@@ -50,7 +50,7 @@ class MultiBufferedCamera {
 
   std::mutex mtx_;
   std::condition_variable cv_;
-  bool frame_available_;
+  bool wait_for_new_frame_;
 
   cv::VideoCapture cap_;
   std::thread capture_thread_;

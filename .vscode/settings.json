@@ -69,7 +69,8 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "codecvt": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "*.tpp": "cpp"
     },
     "editor.tabSize": 2,
     "editor.renderWhitespace": "trailing",

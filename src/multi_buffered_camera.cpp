@@ -1,10 +1,13 @@
 
 #include "camera/multi_buffered_camera.hpp"
 
+#include "tic_toc_timer.h"
+
 using TimestampedFrame = MultiBufferedCamera::TimestampedFrame;
 
 MultiBufferedCamera::MultiBufferedCamera(int camera_id, int width, int height, int fps, int buffer_count)
   : cap_(camera_id, cv::CAP_V4L2),
+  // : cap_(camera_id, cv::CAP_GSTREAMER),
   write_index_(0),
   running_(false),
   cap_ready_(false),
@@ -16,7 +19,7 @@ MultiBufferedCamera::MultiBufferedCamera(int camera_id, int width, int height, i
   height_(height),
   fps_(fps),
   buffer_count_(buffer_count),
-  frame_available_(false)
+  wait_for_new_frame_(false)
 {
   init();
 }
@@ -62,6 +65,7 @@ void MultiBufferedCamera::start() {
   running_.store(true);
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // std::this_thread::yield();
   }
   capture_thread_ = std::thread(&MultiBufferedCamera::captureLoop, this);
   std::cout << "Camera " << id_ << " capture thread started" << std::endl;
@@ -87,55 +91,58 @@ int MultiBufferedCamera::getBufferCount() const {
 TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
   while (!cap_ready_.load()) {
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // std::this_thread::yield();
   }
 
-  // while (running_.load()) {
-  //   int index = write_index_.load();
-  //   while (true) {
-  //     if (buffers_[index].used) {
-  //       std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  //       index = write_index_.load();
-  //       // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
-  //     } else {
-  //       break;
-  //     }
-  //   }
-  //   buffers_[index].used = true;
-  //   return buffers_[index];
-  // }
-  if (running_.load()) {
+  while (running_.load()) {
     int index = write_index_.load();
-    if (!buffers_[index].used) {
-      // std::cout << "returning buffer " << index << std::endl;
-      // buffers_[index].used = true;
-      // std::unique_lock<std::mutex> lock(mtx_);
-      // frame_available_ = false;
-      return buffers_[index];
-    } else {
-      // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
-      // std::cout << "frame_available_: " << frame_available_ << std::endl;
-      {
-        std::unique_lock<std::mutex> lock(mtx_);
-        // frame_available_ = false;
-      }
-      std::unique_lock<std::mutex> lock(mtx_);
-      // frame_available_ = false;
-      cv_.wait(lock, [this] { return frame_available_; });
-      // lock.unlock();
-      int index = write_index_.load();
-      // buffers_[index].used = true;
+    while (true) {
       if (buffers_[index].used) {
-        std::cout << "ERROR CAM " << id_ << std::endl;
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        // std::this_thread::yield();
+        index = write_index_.load();
+        // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
+      } else {
+        break;
       }
-      return buffers_[index];
     }
+    buffers_[index].used = true;
+    return buffers_[index];
   }
+  // if (running_.load()) {
+  //   int index = write_index_.load();
+  //   if (!buffers_[index].used) {
+  //     // std::cout << "returning buffer " << index << std::endl;
+  //     // buffers_[index].used = true;
+  //     // std::unique_lock<std::mutex> lock(mtx_);
+  //     // wait_for_new_frame_ = false;
+  //     return buffers_[index];
+  //   } else {
+  //     // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
+  //     // std::cout << "wait_for_new_frame_: " << wait_for_new_frame_ << std::endl;
+  //     {
+  //       std::unique_lock<std::mutex> lock(mtx_);
+  //       wait_for_new_frame_ = true;
+  //     }
+  //     std::unique_lock<std::mutex> lock(mtx_);
+  //     cv_.wait(lock, [this] { return !wait_for_new_frame_; });
+  //     // wait_for_new_frame_ = false;
+  //     // lock.unlock();
+  //     int index = write_index_.load();
+  //     // buffers_[index].used = true;
+  //     if (buffers_[index].used) {
+  //       // std::cout << "ERROR CAM " << id_ << std::endl;
+  //     }
+  //     return buffers_[index];
+  //   }
+  // }
   return buffers_[0];
 }
 
 TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusOne() {
   while (!cap_ready_.load()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::yield();
   }
   int index = (write_index_.load() - 1 + buffer_count_) % buffer_count_;
   // last_read_index_.store(index);
@@ -144,7 +151,8 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusOne() {
 
 TimestampedFrame& MultiBufferedCamera::getLatestFrameMinusN(int n) {
   while (!cap_ready_.load()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::yield();
   }
   int index = (write_index_.load() - n + buffer_count_) % buffer_count_;
   // last_read_index_.store(index);
@@ -164,25 +172,28 @@ void MultiBufferedCamera::readyCamera() {
 
 void MultiBufferedCamera::captureLoop() {
   int next_index = 0;
+  TicTocTimer timer;
   while (running_.load()) {
     // int next_index = (write_index_.load() + 1) % buffer_count_;
+    timer.tic();
     cap_ >> buffers_[next_index].frame;
+    // std::cout << "Camera " << id_ << " capture loop time: " << timer.toc().ms().value<float>() << std::endl;
 
     if (!buffers_[next_index].frame.empty()) {
       buffers_[next_index].used = false;
       buffers_[next_index].timestamp = std::chrono::steady_clock::now();
+      write_index_.store(next_index);
+      // timer.tic();
       {
         std::lock_guard<std::mutex> lock(mtx_);
-        write_index_.store(next_index);
-        frame_available_ = true;
+        wait_for_new_frame_ = false;
       }
-      cv_.notify_all();
+      cv_.notify_one();
+      // std::cout << "Notify one dt: " << timer.toc().ms().value<float>() << std::endl;
       // next_index = (write_index_.load() + 1) % buffer_count_;
       next_index = (next_index + 1) % buffer_count_;
     } else {
       std::cerr << "Camera " << id_ << " failed to capture frame" << std::endl;
     }
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
   }
 }

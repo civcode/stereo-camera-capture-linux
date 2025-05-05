@@ -37,3 +37,6 @@ target_link_libraries(camera ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
 
 add_executable(test-01 src/test-01.cpp ${SOURCES})
 target_link_libraries(test-01 ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+
+add_executable(test-02 src/test-02.cpp ${SOURCES})
+target_link_libraries(test-02 ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)

@@ -40,7 +40,8 @@ bool StereoCamera::ready() const {
 
 std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getLatestFrames() {
   while (!ready()) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::yield();
   }
   bool is_synchronous;
   TicTocTimer timer;

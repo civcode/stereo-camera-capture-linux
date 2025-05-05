@@ -51,17 +51,19 @@ int main(int argc, char* argv[]) {
     frame[1] = *images.second;
     if (frame[0].empty()) {
       cout << "No frame captured" << endl;
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      // std::this_thread::sleep_for(std::chrono::milliseconds(100));
       continue;
     }
     cv::Mat img;
     cv::hconcat(frame[0], frame[1], img);
     // cv::resize(img, img, cv::Size(320, 240));
+    timer.tic();
     cv::imshow("Camera", img);
     // cv::imshow("Camera Left", frame[0]);
     // cv::imshow("Camera Right", frame[1]);
     if (cv::waitKey(1) == 27) break;
-    // std::this_thread::sleep_for(std::chrono::milliseconds(30));
+    // cout << "dt in ms: " << timer.toc().ms().value<float>() << endl;
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1));
     // cout << "Frame " << count++ << " captured" << endl;
 
     frameCount++;
@@ -77,6 +79,7 @@ int main(int argc, char* argv[]) {
     // cout << std::flush;
     // cout << "\rFPS: " << fps << std::flush;
     cout << "FPS: " << fps << std::endl;
+    // std::this_thread::yield();
   }
   camera.stop();
   cv::destroyAllWindows();
