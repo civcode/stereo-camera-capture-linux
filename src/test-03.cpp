@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <atomic>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -14,6 +15,7 @@ cv::Mat frame;
 std::mutex mtx;
 std::condition_variable cvx;
 bool hasReachedPoint = false;
+std::atomic<bool> just_written;
 
 void capture() {
   cv::VideoCapture cap(0, cv::CAP_V4L2);
@@ -22,14 +24,17 @@ void capture() {
     return;
   }
 
+  cap.set(cv::CAP_PROP_FPS, 60);
+
   TicTocTimer timer;
   while (running) {
     timer.tic();
     {
       // std::unique_lock<std::mutex> lock(mtx);
-      mtx.lock();
+      // mtx.lock();
       cap >> frame;
-      mtx.unlock();
+      just_written.store(true);
+      // mtx.unlock();
     }
     std::cout << "Capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
     // {
@@ -58,9 +63,15 @@ void gui() {
       // cvx.wait(lock, [] { return hasReachedPoint; });
       // hasReachedPoint = false;
       // mtx.lock();
-      img = frame.clone();
+      // img = frame.clone();
       // mtx.unlock();
     }
+    while (!just_written.load()) {
+      // std::cout << "Waiting for frame..." << std::endl;
+      // std::this_thread::yield();
+      // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+    just_written.store(false);
     cv::imshow("Camera", frame);
     if (cv::waitKey(10) >= 0) {
       running = false;
@@ -71,6 +82,7 @@ void gui() {
 
 int main(int argc, char* argv[]) {
 
+  just_written.store(false);
   std::thread capture_thread(capture);
   std::thread gui_thread(gui);
 
