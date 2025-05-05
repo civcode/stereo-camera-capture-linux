@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <sched.h>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 bool running = true;
 cv::Mat frame;
@@ -26,7 +26,7 @@ void capture() {
 
   cap.set(cv::CAP_PROP_FPS, 60);
 
-  TicTocTimer timer;
+  TicToc timer;
   while (running) {
     timer.tic();
     {
@@ -73,7 +73,7 @@ void gui() {
     }
     just_written.store(false);
     cv::imshow("Camera", frame);
-    if (cv::waitKey(10) >= 0) {
+    if (cv::waitKey(1) >= 0) {
       running = false;
       break;
     }

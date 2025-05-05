@@ -15,12 +15,18 @@ FetchContent_Declare(
   GIT_TAG        v3.0.0
 )
 FetchContent_Declare(
-  tictoctimer
+  tictoc
   GIT_REPOSITORY https://github.com/civcode/tic-toc-timer.git
-  GIT_TAG        v0.2.2
+  GIT_TAG        v0.3
+)
+FetchContent_Declare(
+  fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG        11.2.0
 )
 FetchContent_MakeAvailable(cxxopts)
-FetchContent_MakeAvailable(tictoctimer)
+FetchContent_MakeAvailable(tictoc)
+FetchContent_MakeAvailable(fmt)
 
 find_package(OpenCV REQUIRED)
 
@@ -36,22 +42,22 @@ set(SOURCES
 )
 
 add_executable(camera src/main.cpp ${SOURCES})
-target_link_libraries(camera ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(camera ${OpenCV_LIBS} cxxopts::cxxopts tictoc fmt::fmt)
 
 add_executable(test-01 src/test-01.cpp ${SOURCES})
-target_link_libraries(test-01 ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(test-01 ${OpenCV_LIBS} cxxopts::cxxopts tictoc)
 
 add_executable(test-02 src/test-02.cpp ${SOURCES})
-target_link_libraries(test-02 ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(test-02 ${OpenCV_LIBS} cxxopts::cxxopts tictoc)
 
 add_executable(test-03 src/test-03.cpp ${SOURCES})
-target_link_libraries(test-03 ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(test-03 ${OpenCV_LIBS} cxxopts::cxxopts tictoc)
 
 add_executable(ipc_capture src/ipc_capture.cpp ${SOURCES})
-target_link_libraries(ipc_capture ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(ipc_capture ${OpenCV_LIBS} cxxopts::cxxopts tictoc)
 
 add_executable(ipc_visualize src/ipc_visualize.cpp ${SOURCES})
-target_link_libraries(ipc_visualize ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(ipc_visualize ${OpenCV_LIBS} cxxopts::cxxopts tictoc)
 
 add_executable(rectify src/rectify.cpp ${SOURCES})
-target_link_libraries(rectify ${OpenCV_LIBS} cxxopts::cxxopts tictoctimer)
+target_link_libraries(rectify ${OpenCV_LIBS} cxxopts::cxxopts tictoc)

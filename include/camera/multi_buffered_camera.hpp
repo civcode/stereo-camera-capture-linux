@@ -47,6 +47,7 @@ class MultiBufferedCamera {
   std::atomic<bool> stopped_;
   std::atomic<int> last_read_index_;
   std::atomic<int> cap_count_;
+  std::atomic<bool> just_written_;
 
   std::mutex mtx_;
   std::condition_variable cv_;

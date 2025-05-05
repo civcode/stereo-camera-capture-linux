@@ -8,12 +8,12 @@
 
 #include "cxxopts.hpp"
 
-#include "camera/double_buffered_camera.hpp"
+#include "fmt/base.h"
+
 #include "camera/multi_buffered_camera.hpp"
-#include "camera/ps3_eye.hpp"
 #include "camera/stereo_camera.hpp"
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
   // MultiBufferedCamera camera(0, 640, 480, 60);
   // MultiBufferedCamera camera(0, 320, 240, 187);
   // StereoCamera camera(0, 1, 640, 480, 15, 10);
-  StereoCamera camera(0, 1, 640, 480, 30, 10, 5);
+  StereoCamera camera(0, 1, 640, 480, 30);
   // StereoCamera camera(0, 1, 320, 240, 187, 10, 3);
   camera.start();
   cv::namedWindow("Camera", cv::WINDOW_AUTOSIZE);
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   int frameCount = 0;
   double tickFrequency = cv::getTickFrequency();
   int64 startTime = cv::getTickCount();
-  TicTocTimer timer;
+  TicToc timer;
   while (true) {
     // auto timestamped_frame = camera.getLatestFrames();
     timer.tic();
@@ -76,11 +76,14 @@ int main(int argc, char* argv[]) {
         frameCount = 0;
     }
     // printf("\rFPS: %.1f dt: %f", fps, dt);
+    // printf("\rFPS: %.1f", fps);
     // cout << std::flush;
-    // cout << "\rFPS: " << fps << std::flush;
-    cout << "FPS: " << fps << std::endl;
+    fmt::print("\rFPS: {:.1f}", fps);
+    std::cout << std::flush;
+    // cout << "FPS: " << fps << std::endl;
     // std::this_thread::yield();
   }
+  cout << endl;
   camera.stop();
   cv::destroyAllWindows();
 

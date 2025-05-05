@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <iostream>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 const char* SHM_NAME = "/opencv_image_shm";
 const char* SEM_NAME = "/opencv_image_sem";
@@ -38,7 +38,7 @@ int main() {
     std::cout << "shm_fd: " << shm_fd << std::endl;
     cv::Mat frame(HEIGHT, WIDTH, CV_8UC3);
 
-    TicTocTimer timer;
+    TicToc timer;
     while (true) {
         timer.tic();
         sem_wait(sem);

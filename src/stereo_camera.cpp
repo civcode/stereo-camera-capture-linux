@@ -2,7 +2,7 @@
 
 #include <chrono>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 StereoCamera::StereoCamera(int camera_id_left, int camera_id_right, int width, int height, int fps, int buffer_count, int dt_max)
 : id_left_(camera_id_left),
@@ -44,7 +44,7 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
     std::this_thread::yield();
   }
   bool is_synchronous;
-  TicTocTimer timer;
+  TicToc timer;
   timer.tic();
   MultiBufferedCamera::TimestampedFrame& left_frame = cam_left_.getLatestFrame();
   // std::cout << "Left frame capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
@@ -57,6 +57,7 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
   int step_l = 1;
   do {
     auto dt = std::chrono::duration_cast<std::chrono::milliseconds>(left_frame.timestamp - right_frame.timestamp).count();
+    // std::cout << "dt = " << dt << std::endl;
     if (std::abs(dt) < dt_max_) {
       // Frames are close enough
       // std::cout << "Frames are close enough, dt = " << dt << std::endl;
@@ -76,17 +77,15 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
       }
       if (left_frame.used || right_frame.used) {
         // std::cout << "Frame already used, exiting" << std::endl;
-        return std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> (
-          std::make_shared<cv::Mat>(cv::Mat()),
-          std::make_shared<cv::Mat>(cv::Mat())
-        );
-        break;
+        // break;
       }
       if (step_l >= cam_left_.getBufferCount() || step_r >= cam_right_.getBufferCount()) {
         std::cout << "step_l = " << step_l << ", step_r = " << step_r << std::endl;
         std::cout << "Buffer count reached, exiting" << std::endl;
-        // exit(0);
-        break;
+        return std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> (
+          std::make_shared<cv::Mat>(cv::Mat()),
+          std::make_shared<cv::Mat>(cv::Mat())
+        );
       }
     }
   } while (true);

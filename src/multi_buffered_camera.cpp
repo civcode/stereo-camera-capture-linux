@@ -1,7 +1,7 @@
 
 #include "camera/multi_buffered_camera.hpp"
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 using TimestampedFrame = MultiBufferedCamera::TimestampedFrame;
 
@@ -22,6 +22,7 @@ MultiBufferedCamera::MultiBufferedCamera(int camera_id, int width, int height, i
   wait_for_new_frame_(false)
 {
   init();
+  just_written_.store(false);
 }
 
 MultiBufferedCamera::~MultiBufferedCamera() {
@@ -95,20 +96,30 @@ TimestampedFrame& MultiBufferedCamera::getLatestFrame() {
   }
 
   while (running_.load()) {
-    int index = write_index_.load();
-    while (true) {
-      if (buffers_[index].used) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        // std::this_thread::yield();
-        index = write_index_.load();
-        // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
-      } else {
-        break;
-      }
+    while (!just_written_.load()) {
+      // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
+      std::this_thread::yield();
     }
+    just_written_.store(false);
+    int index = write_index_.load();
     buffers_[index].used = true;
     return buffers_[index];
   }
+  // while (running_.load()) {
+  //   int index = write_index_.load();
+  //   while (true) {
+  //     if (buffers_[index].used) {
+  //       std::this_thread::sleep_for(std::chrono::milliseconds(1));
+  //       // std::this_thread::yield();
+  //       index = write_index_.load();
+  //       // std::cout << "Camera " << id_ << " waiting for frame" << std::endl;
+  //     } else {
+  //       break;
+  //     }
+  //   }
+  //   buffers_[index].used = true;
+  //   return buffers_[index];
+  // }
   // if (running_.load()) {
   //   int index = write_index_.load();
   //   if (!buffers_[index].used) {
@@ -172,7 +183,7 @@ void MultiBufferedCamera::readyCamera() {
 
 void MultiBufferedCamera::captureLoop() {
   int next_index = 0;
-  TicTocTimer timer;
+  TicToc timer;
   while (running_.load()) {
     // int next_index = (write_index_.load() + 1) % buffer_count_;
     timer.tic();
@@ -183,12 +194,13 @@ void MultiBufferedCamera::captureLoop() {
       buffers_[next_index].used = false;
       buffers_[next_index].timestamp = std::chrono::steady_clock::now();
       write_index_.store(next_index);
+      just_written_.store(true);
       // timer.tic();
-      {
-        std::lock_guard<std::mutex> lock(mtx_);
-        wait_for_new_frame_ = false;
-      }
-      cv_.notify_one();
+      // {
+      //   std::lock_guard<std::mutex> lock(mtx_);
+      //   wait_for_new_frame_ = false;
+      // }
+      // cv_.notify_one();
       // std::cout << "Notify one dt: " << timer.toc().ms().value<float>() << std::endl;
       // next_index = (write_index_.load() + 1) % buffer_count_;
       next_index = (next_index + 1) % buffer_count_;

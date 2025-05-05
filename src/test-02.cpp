@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <sched.h>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 bool running = true;
 cv::Mat frame;
@@ -16,7 +16,7 @@ void capture() {
     return;
   }
 
-  TicTocTimer timer;
+  TicToc timer;
   while (running) {
     timer.tic();
     cap >> frame;

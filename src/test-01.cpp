@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <thread>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 int main(int argc, char* argv[]) {
   // MultiBufferedCamera camera(0, 640, 480, 60);
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
   cv::Mat frame;
 
-  TicTocTimer timer;
+  TicToc timer;
   while (true) {
     timer.tic();
     cap >> frame;

@@ -6,7 +6,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 const char* SHM_NAME = "/opencv_image_shm";
 const char* SEM_NAME = "/opencv_image_sem";
@@ -18,7 +18,7 @@ const size_t IMAGE_SIZE = WIDTH * HEIGHT * CHANNELS;
 
 int main() {
     int shm_fd = shm_open(SHM_NAME, O_CREAT | O_RDWR, 0666);
-    ftruncate(shm_fd, IMAGE_SIZE);
+    int ret = ftruncate(shm_fd, IMAGE_SIZE);
     void* shm_ptr = mmap(nullptr, IMAGE_SIZE, PROT_WRITE, MAP_SHARED, shm_fd, 0);
     sem_t* sem = sem_open(SEM_NAME, O_CREAT, 0666, 0);
 
@@ -34,7 +34,7 @@ int main() {
     }
 
     cv::Mat frame;
-    TicTocTimer timer;
+    TicToc timer;
     while (true) {
         timer.tic();
         cap >> frame;

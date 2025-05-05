@@ -7,7 +7,7 @@
 #include "cxxopts.hpp"
 
 #include "camera/stereo_camera.hpp"
-#include "tic_toc_timer.h"
+#include "tictoc/timer.hpp"
 
 using std::cout;
 using std::endl;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
   int frameCount = 0;
   double tickFrequency = cv::getTickFrequency();
   int64 startTime = cv::getTickCount();
-  TicTocTimer timer;
+  TicToc timer;
   while (true) {
     timer.tic();
     auto images = camera.getLatestFrames();
