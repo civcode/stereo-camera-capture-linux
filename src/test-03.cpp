@@ -1,5 +1,7 @@
 #include <opencv2/opencv.hpp>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #include <pthread.h>
 #include <sched.h>
@@ -8,6 +10,10 @@
 
 bool running = true;
 cv::Mat frame;
+
+std::mutex mtx;
+std::condition_variable cvx;
+bool hasReachedPoint = false;
 
 void capture() {
   cv::VideoCapture cap(0, cv::CAP_V4L2);
@@ -19,8 +25,18 @@ void capture() {
   TicTocTimer timer;
   while (running) {
     timer.tic();
-    cap >> frame;
+    {
+      // std::unique_lock<std::mutex> lock(mtx);
+      mtx.lock();
+      cap >> frame;
+      mtx.unlock();
+    }
     std::cout << "Capture time: " << timer.toc().ms().value<float>() << " ms" << std::endl;
+    // {
+    //   std::lock_guard<std::mutex> lock(mtx);
+    //   hasReachedPoint = true;
+    // }
+    // cvx.notify_one();
     if (frame.empty()) {
       std::cerr << "Error: No frame captured." << std::endl;
       continue;
@@ -30,14 +46,23 @@ void capture() {
 
 void gui() {
   cv::namedWindow("Camera", cv::WINDOW_AUTOSIZE);
+  cv::Mat img;
   while (running) {
     if (frame.empty()) {
       std::cerr << "Error: No frame captured." << std::endl;
       std::this_thread::sleep_for(std::chrono::milliseconds(100));
       continue;
     }
+    {
+      // std::unique_lock<std::mutex> lock(mtx);
+      // cvx.wait(lock, [] { return hasReachedPoint; });
+      // hasReachedPoint = false;
+      // mtx.lock();
+      img = frame.clone();
+      // mtx.unlock();
+    }
     cv::imshow("Camera", frame);
-    if (cv::waitKey(1) >= 0) {
+    if (cv::waitKey(10) >= 0) {
       running = false;
       break;
     }

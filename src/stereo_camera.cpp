@@ -76,6 +76,10 @@ std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> StereoCamera::getL
       }
       if (left_frame.used || right_frame.used) {
         // std::cout << "Frame already used, exiting" << std::endl;
+        return std::pair<std::shared_ptr<cv::Mat>, std::shared_ptr<cv::Mat>> (
+          std::make_shared<cv::Mat>(cv::Mat()),
+          std::make_shared<cv::Mat>(cv::Mat())
+        );
         break;
       }
       if (step_l >= cam_left_.getBufferCount() || step_r >= cam_right_.getBufferCount()) {
